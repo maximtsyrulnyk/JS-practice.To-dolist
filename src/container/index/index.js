@@ -1,4 +1,26 @@
 export class Todo {
+    static #NAME = 'todo'
+
+    static #saveData = () => {
+        localStorage.setItem(
+            this.#NAME,
+            JSON.stringify({
+                list: this.#list,
+                count: this.#count,
+            }),
+        )
+    }
+
+    static #loadData = () => {
+        const data = localStorage.getItem(this.#NAME)
+
+        if(data) {
+            const {list, count} = JSON.parse(data)
+            this.#list = list
+            this.#count = count
+        }
+    }
+
     static #list = []
     static #count = 0
 
@@ -21,14 +43,18 @@ export class Todo {
         this.#input = document.querySelector('.form__input');
         this.#button = document.querySelector('.form__button');
         this.#button.onclick = this.#handleAdd
+        this.#loadData()
         this.#render()
     }
     static #handleAdd = () => {
         const value = this.#input.value
+        if(value.length>1) {
             this.#createTaskData(value)
             this.#input.value = ''
-           
-            console.log(this.#list)
+            this.#render()
+            this.#saveData()
+        }
+
     }
     static #render = () => {
         this.#block.innerHTML = ''
@@ -53,12 +79,47 @@ export class Todo {
 
         btnCancel.onclick = this.#handleCancel(data)
 
+        btnDo.onclick = this.#handleDo(data, btnDo, el)
+
+        if(data.done) {
+            el.classList.add('task--done')
+            btnDo.classList.remove('task__button--do')
+            btnDo.classList.add('task__button--done')
+        }
+
         return el
     }
 
+    static #handleDo = (data, btn, el) => () => {
+        const result = this.#toggleDone(data.id)
+
+        if(result === true || result === false) {
+            el.classList.toggle('task--done')
+            btn.classList.toggle('task__button--do')
+            btn.classList.toggle('task__button--done')
+            this.#saveData()
+        }
+    }
+
+    static #toggleDone = (id) => {
+        const task = this.#list.find((item) => item.id === id)
+
+        if(task) {
+            task.done = !task.done
+            return task.done
+        } else {
+            return null
+        }
+    }
+
     static #handleCancel = (data) => () => {
-        const result = this.#deleteById(data.id)
-        if(result) this.#render()
+        if(confirm('Видалити задачу?')) {
+            const result = this.#deleteById(data.id)
+        if (result) 
+        this.#render()
+        this.#saveData()
+        }
+        
     }
 
     static #deleteById = (id) => {
