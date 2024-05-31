@@ -16,31 +16,28 @@ export class Todo {
     static #button = null
 
     static init = () => {
-        this.#template = document.getElementById('task').content.firstElementChild
-
+        this.#template = document.getElementById('task',).content.firstElementChild
         this.#block = document.querySelector('.task__list');
-
         this.#input = document.querySelector('.form__input');
-
-        this.#button = document.querySelectorAll('.form__button')
+        this.#button = document.querySelector('.form__button');
+        this.#button.onclick = this.#handleAdd
+        this.#render()
     }
-
     static #handleAdd = () => {
         const value = this.#input.value
             this.#createTaskData(value)
             this.#input.value = ''
-            
+           
             console.log(this.#list)
     }
     static #render = () => {
         this.#block.innerHTML = ''
-
-        if(this.#list.length === 0) {
-            this.#block.innerHTML = `Список задач пустий`
+        if (this.#list.length === 0) {
+            this.#block.innerText = `Список задач пустий`
         } else {
             this.#list.forEach((taskData) => {
                 const el = this.#createTaskElem(taskData)
-                this.#block.append(el) 
+                this.#block.append(el)
             })
         }
     }
@@ -48,7 +45,25 @@ export class Todo {
     static #createTaskElem = (data) => {
         const el = this.#template.cloneNode(true)
 
+        const [id, text, btnDo, btnCancel] = el.children
+
+        id.innerText = `${data.id}.`
+
+        text.innerText = data.text
+
+        btnCancel.onclick = this.#handleCancel(data)
+
         return el
+    }
+
+    static #handleCancel = (data) => () => {
+        const result = this.#deleteById(data.id)
+        if(result) this.#render()
+    }
+
+    static #deleteById = (id) => {
+        this.#list = this.#list.filter((item) => item.id !== id);
+        return true
     }
 }
 
